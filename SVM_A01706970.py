@@ -119,7 +119,7 @@ def dataset_(dataset_num):
     X_test = X_shuffled[split_index:]
     y_test = y_shuffled[split_index:]
 
-    samples_train = [] #
+    samples_train = [] 
     for i in range(X_train.shape[0]):
         sample = np.concatenate(([1], X_train[i]))
         samples_train.append(sample)
@@ -129,7 +129,7 @@ def dataset_(dataset_num):
     return X_train, y_train, X_test, y_test, samples_train
 
 
-def run(data):
+def run(data, num):
     """Genera una corrida de entrenamiento y evaluación de modelo con el dataset indicado
 
 	Args:
@@ -145,7 +145,7 @@ def run(data):
     epochs = 0 #inizialicación de núm. d épocas
     max_epochs = 100 #épocas máximas
 
-    print(f'******************** Modelo {data}: ********************')
+    print(f'******************** Modelo {data}.{num}: ********************')
     while epochs < max_epochs:
         total_loss = 0
         for i in range(len(samples_train)):
@@ -199,11 +199,14 @@ def run(data):
     #print("Final Parameters:", params)
     print(f'Métricas:\n {classification_report(y_test, predictions)}')
     cm = confusion_matrix(y_test, predictions)
-    disp = ConfusionMatrixDisplay(cm)
-    disp.plot()
-    plt.show()
+    # disp = ConfusionMatrixDisplay(cm)
+    # disp.plot()
+    # plt.show()
 
     return params
 
-run(1) #Corrida con dataset Iris
-run(2) #Corrida con dataset Cancer
+for i in range(1, 4): 
+    run(1, i) #Corrida con dataset Iris
+
+for i in range(1,4):
+    run(2, i) #Corrida con dataset Cancer
