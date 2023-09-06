@@ -99,13 +99,9 @@ def dataset_(dataset_num):
     X = dataset.data
     y = dataset.target
 
-    print(X.shape,y.shape)
-
     if dataset_num == 1: #Seleccionar dos clases y dos atributos
         X = X[y != 2, :2]  
         y = y[y != 2]
-        print('yyyy:',y.shape)
-        
     
     y[y == 0] = -1  # Ajuste de clases (-1, 1)
     
@@ -132,67 +128,82 @@ def dataset_(dataset_num):
 
     return X_train, y_train, X_test, y_test, samples_train
 
-X_train, y_train, X_test, y_test, samples_train = dataset_(2) #genera los datos en formato correcto
 
-params = np.zeros(X_train.shape[1] + 1) #inizalicaión de arreglo de parámetros
-C = 0.00001 # Regularizacion
-learning_rate = 0.0001 #aprendizaje
-epochs = 0 #inizialicación de núm. d épocas
-max_epochs = 100 #épocas máximas
+def run(data):
+    """Genera una corrida de entrenamiento y evaluación de modelo con el dataset indicado
 
-while epochs < max_epochs:
-    total_loss = 0
-    for i in range(len(samples_train)):
-        grad = gradient(params, samples_train[i], y_train[i], C) #gradiente
-        params -= learning_rate * grad #actualización de parámetros
-        total_loss += calculate_loss(params, samples_train, y_train, C)  #pérdida total
-    avg_loss = total_loss / len(samples_train) #promedio de pérdida
-    glosses.append(avg_loss) #actualización de pérdida global
-    print(f"Epoch {epochs} - Average Loss: {avg_loss}")
-    epochs += 1
+	Args:
+		data (int) numero correspondiendo a uno de los datasets disponibles: iris (1), cancer (2)
 
-    #break si la pérdida empieza a aumentar
-    if epochs > 1 and glosses[epochs - 1] > glosses[epochs - 2]:
-        break
+	Returns:
+		Modelo y evaluación
+	"""
+    X_train, y_train, X_test, y_test, samples_train = dataset_(data) #genera los datos en formato correcto
+    params = np.zeros(X_train.shape[1] + 1) #inizalicaión de arreglo de parámetros
+    C = 0.00001 # Regularizacion
+    learning_rate = 0.0001 #aprendizaje
+    epochs = 0 #inizialicación de núm. d épocas
+    max_epochs = 100 #épocas máximas
 
-# Plot
-plt.plot(glosses)
-plt.xlabel("Epochs")
-plt.ylabel("Loss")
-plt.title("Loss vs. Epochs")
-plt.show()
+    print(f'******************** Modelo {data}: ********************')
+    while epochs < max_epochs:
+        total_loss = 0
+        for i in range(len(samples_train)):
+            grad = gradient(params, samples_train[i], y_train[i], C) #gradiente
+            params -= learning_rate * grad #actualización de parámetros
+            total_loss += calculate_loss(params, samples_train, y_train, C)  #pérdida total
+        avg_loss = total_loss / len(samples_train) #promedio de pérdida
+        glosses.append(avg_loss) #actualización de pérdida global
+        print(f"Epoch {epochs} - Average Loss: {avg_loss}")
+        epochs += 1
 
-#añadir bias a datos de prueba
-samples_test = []
-for i in range(X_test.shape[0]):
-    sample = np.concatenate(([1], X_test[i]))
-    samples_test.append(sample)
-samples_test = np.array(samples_test)
+        #break si la pérdida empieza a aumentar
+        if epochs > 1 and glosses[epochs - 1] > glosses[epochs - 2]:
+            break
 
-correct_predictions = 0 #inicalización de núm. de preds correctas
- 
-#conteo de predicciones correctas
-for i in range(len(samples_test)):
-    prediction = np.sign(hyperplane_function(params, samples_test[i]))
-    if prediction == y_test[i]:
-        correct_predictions += 1
+    # Plot
+    plt.plot(glosses)
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.title("Loss vs. Epochs")
+    plt.show()
 
-#cálculo de accuracy
-accuracy = correct_predictions / len(samples_test) * 100
-print(f"Accuracy: {accuracy:.2f}%")
+    #añadir bias a datos de prueba
+    samples_test = []
+    for i in range(X_test.shape[0]):
+        sample = np.concatenate(([1], X_test[i]))
+        samples_test.append(sample)
+    samples_test = np.array(samples_test)
 
-# Predicciones
-predictions = []
+    correct_predictions = 0 #inicalización de núm. de preds correctas
+    
+    #conteo de predicciones correctas
+    for i in range(len(samples_test)):
+        prediction = np.sign(hyperplane_function(params, samples_test[i]))
+        if prediction == y_test[i]:
+            correct_predictions += 1
 
-for i in range(len(samples_test)):
-    prediction = np.sign(hyperplane_function(params, samples_test[i]))
-    predictions.append(prediction)
+    #cálculo de accuracy
+    accuracy = correct_predictions / len(samples_test) * 100
+    print(f"Accuracy: {accuracy:.2f}%")
 
-print("True Labels:", y_test)
-print("Predictions:", predictions)
-print("Final Parameters:", params)
-print(classification_report(y_test, predictions))
-cm = confusion_matrix(y_test, predictions)
-disp = ConfusionMatrixDisplay(cm)
-disp.plot()
-plt.show()
+    # Predicciones
+    predictions = []
+
+    for i in range(len(samples_test)):
+        prediction = np.sign(hyperplane_function(params, samples_test[i]))
+        predictions.append(prediction)
+
+    #print("True Labels:", y_test)
+    #print("Predictions:", predictions)
+    #print("Final Parameters:", params)
+    print(f'Métricas:\n {classification_report(y_test, predictions)}')
+    cm = confusion_matrix(y_test, predictions)
+    disp = ConfusionMatrixDisplay(cm)
+    disp.plot()
+    plt.show()
+
+    return params
+
+run(1) #Corrida con dataset Iris
+run(2) #Corrida con dataset Cancer
